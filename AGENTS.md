@@ -24,6 +24,7 @@ wake-your-drive-python/
 │   ├── config.py         # Platform detection, all constants & path resolution
 │   ├── disk.py           # DiskPulseThread — background daemon thread, heartbeat logic
 │   ├── tray.py           # TrayApp — system tray UI (pystray)
+│   ├── settings.py       # Runtime config file management (load/save/ensure)
 │   └── utils.py          # sleep prevention, tray availability check, icon generation
 ├── bin/
 │   ├── requirements.txt  # pip deps for builds: pyinstaller, pystray, Pillow
@@ -32,6 +33,7 @@ wake-your-drive-python/
 │   └── build_exe.bat     # PyInstaller build script → dist/WakeTheDrive.exe
 ├── build/                # Local build artifacts (gitignored)
 ├── AGENTS.md             # ← this file
+├── CLAUDE.md             # Claude reference guide
 ├── GEMINI.md             # Project mandates (absolute rules, read first)
 ├── README.md             # User-facing documentation
 └── REQUIREMENTS.md       # Functional & technical requirements spec
@@ -81,16 +83,30 @@ System tray UI. Must always run on the **main thread** (pystray requirement).
 Menu items use `lambda text: f"..."` so they re-evaluate on each menu open, picking up `pulse_thread.last_pulse` dynamically.
 
 ### `src/utils.py`
-Three standalone helpers.
+Four standalone helpers.
 
 | Function | Description |
 |---|---|
 | `is_tray_supported()` | Returns `True` if `pystray` and `PIL` imported successfully |
 | `set_sleep_prevention(active)` | Windows: calls `SetThreadExecutionState`. macOS/Linux: currently a no-op (platform handles it differently — see roadmap) |
+| `open_config_file(path)` | Opens `path` in the OS default editor. Windows: `os.startfile`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
 | `create_icon_image()` | Returns a 64×64 RGBA `PIL.Image` — green circle on transparent background |
 
+### `src/settings.py`
+Runtime configuration file management. Depends on `config.py`; only imported by `__main__.py`.
+
+| Symbol | Type | Description |
+|---|---|---|
+| `DEFAULT_CONFIG` | `dict` | Default values: `{"interval_seconds": 60, "heartbeat_filename": ".drive_heartbeat"}` |
+
+| Function | Description |
+|---|---|
+| `load_config()` | Reads `CONFIG_FILE_PATH`, validates known keys, fills missing keys with defaults. Returns a `dict`. Never raises — logs warning on I/O or parse error. |
+| `save_config(config)` | Writes `config` dict to `CONFIG_FILE_PATH` as pretty-printed JSON. Logs warning on failure. |
+| `ensure_config()` | Creates the config file with defaults if it does not exist, then calls `load_config()` and returns the result. Called once at startup. |
+
 ### `src/__main__.py` — `WakeTheDrive` + `main()`
-Orchestrator. Parses `--interval` arg, creates `DiskPulseThread` and (if available) `TrayApp`, wires them together, blocks until exit.
+Orchestrator. Parses `--interval` arg, calls `ensure_config()` to load/create the config file, creates `DiskPulseThread` and (if available) `TrayApp`, wires them together, blocks until exit. CLI `--interval` takes precedence over the config file value.
 
 **Thread model:**
 - Main thread → `TrayApp.run()` (tray mode) or `while self._running: sleep(1)` (CLI mode)
