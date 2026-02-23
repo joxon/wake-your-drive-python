@@ -14,23 +14,24 @@ class TrayApp:
         self.stop_callback = stop_callback
         self.pulse_thread = pulse_thread
 
-        menu = pystray.Menu(
-            pystray.MenuItem(lambda text: f"Drive: {DRIVE_DISPLAY}", None, enabled=False),
-            pystray.MenuItem(lambda text: f"File Path: {PATH_DISPLAY}", None, enabled=False),
-            pystray.MenuItem(
-                lambda text: f"Last Pulse: {self.pulse_thread.last_pulse}",
-                None,
-                enabled=False,
-            ),
-            pystray.MenuItem(
-                f"Config: {CONFIG_FILE_PATH}",
-                lambda icon, item: open_config_file(CONFIG_FILE_PATH),
-            ),
-            pystray.MenuItem("Exit", self.on_exit),
-        )
+        def build_menu_items():
+            return (
+                pystray.MenuItem(f"Drive: {DRIVE_DISPLAY}", None, enabled=False),
+                pystray.MenuItem(
+                    f"Last Pulse: {self.pulse_thread.last_pulse}",
+                    None,
+                    enabled=False,
+                ),
+                pystray.MenuItem(f"File Path: {PATH_DISPLAY}", None, enabled=False),
+                pystray.MenuItem(
+                    f"Config: {CONFIG_FILE_PATH}",
+                    lambda icon, item: open_config_file(CONFIG_FILE_PATH),
+                ),
+                pystray.MenuItem("Exit", self.on_exit),
+            )
 
         self.icon = pystray.Icon(
-            "WakeTheDrive", create_icon_image(), "WakeTheDrive", menu
+            "WakeTheDrive", create_icon_image(), "WakeTheDrive", pystray.Menu(build_menu_items)
         )
 
     def run(self):
