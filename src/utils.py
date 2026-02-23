@@ -1,5 +1,7 @@
 
-from src.config import IS_WINDOWS, ES_CONTINUOUS, ES_SYSTEM_REQUIRED
+import subprocess
+
+from src.config import IS_WINDOWS, IS_MAC, IS_LINUX, ES_CONTINUOUS, ES_SYSTEM_REQUIRED
 
 # Optional: System Tray support
 try:
@@ -26,6 +28,26 @@ def set_sleep_prevention(active=True):
             ctypes.windll.kernel32.SetThreadExecutionState(state)
         except Exception as e:
             print(f"Failed to set sleep prevention state: {e}")
+
+
+def open_config_file(path: str) -> None:
+    """
+    Opens the given file path in the OS default application.
+    - Windows: os.startfile()
+    - macOS:   'open' command
+    - Linux:   'xdg-open' command
+    Silently logs a warning on failure.
+    """
+    try:
+        if IS_WINDOWS:
+            import os as _os
+            _os.startfile(path)  # type: ignore[attr-defined]
+        elif IS_MAC:
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
+    except Exception as e:
+        print(f"[WakeTheDrive] Warning: could not open config file: {e}")
 
 
 def create_icon_image():

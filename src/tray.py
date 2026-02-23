@@ -1,6 +1,6 @@
 
-from src.utils import is_tray_supported, create_icon_image
-from src.config import DRIVE_DISPLAY, PATH_DISPLAY
+from src.utils import is_tray_supported, create_icon_image, open_config_file
+from src.config import DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH
 
 if is_tray_supported():
     import pystray
@@ -21,6 +21,10 @@ class TrayApp:
                 lambda text: f"Last Pulse: {self.pulse_thread.last_pulse}",
                 None,
                 enabled=False,
+            ),
+            pystray.MenuItem(
+                f"Config: {CONFIG_FILE_PATH}",
+                lambda icon, item: open_config_file(CONFIG_FILE_PATH),
             ),
             pystray.MenuItem("Exit", self.on_exit),
         )
