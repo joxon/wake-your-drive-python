@@ -82,7 +82,9 @@ cd bin
 ./build_mac.sh
 ```
 
-Output: `bin/dist/WakeTheDrive_Mac`
+Output: `bin/dist/WakeTheDrive_Mac` (and `bin/dist/WakeTheDrive_Mac.app`)
+
+> **Note:** PyInstaller 6.x warns that `--onefile --windowed` together on macOS is deprecated and will become an error in v7.0. The build produces both a standalone binary and a `.app` bundle. Migration to `--onedir` mode will be required when upgrading to PyInstaller 7+.
 
 ### Windows
 
