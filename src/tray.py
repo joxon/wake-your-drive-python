@@ -1,6 +1,5 @@
-
-from src.utils import is_tray_supported, create_icon_image, open_config_file
-from src.config import APP_NAME, DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH
+from src.utils import is_tray_supported, create_icon_image, open_config_file, open_file_explorer
+from src.config import APP_NAME, DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH, BASE_DIR
 
 if is_tray_supported():
     import pystray
@@ -22,12 +21,16 @@ class TrayApp:
                     None,
                     enabled=False,
                 ),
-                pystray.MenuItem(f"File Path: {PATH_DISPLAY}", None, enabled=False),
+                pystray.Menu.SEPARATOR,
                 pystray.MenuItem(
-                    f"Config: {CONFIG_FILE_PATH}",
+                    f"Click to open: {PATH_DISPLAY}",
+                    lambda icon, item: open_file_explorer(BASE_DIR),
+                ),
+                pystray.MenuItem(
+                    f"Click to edit config: {CONFIG_FILE_PATH}",
                     lambda icon, item: open_config_file(CONFIG_FILE_PATH),
                 ),
-                pystray.MenuItem("Exit", self.on_exit),
+                pystray.MenuItem("Click to exit", self.on_exit),
             )
 
         self.icon = pystray.Icon(
