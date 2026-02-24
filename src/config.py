@@ -26,8 +26,9 @@ else:
     F_FULLFSYNC = None
 
 # Application settings
+APP_NAME = "WakeTheDrive"
 DEFAULT_INTERVAL = 1
-HEARTBEAT_FILENAME = "WakeYourDrive.heartbeat.txt"
+HEARTBEAT_FILENAME = f"{APP_NAME}.heartbeat.txt"
 
 # Determine base directory
 if getattr(sys, 'frozen', False):
@@ -49,5 +50,5 @@ else:
 HEARTBEAT_FILE_PATH = os.path.join(BASE_DIR, HEARTBEAT_FILENAME)
 
 # Config file settings
-CONFIG_FILENAME = "WakeYourDrive.config.json"
+CONFIG_FILENAME = f"{APP_NAME}.config.json"
 CONFIG_FILE_PATH = os.path.join(BASE_DIR, CONFIG_FILENAME)

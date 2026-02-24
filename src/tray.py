@@ -1,6 +1,6 @@
 
 from src.utils import is_tray_supported, create_icon_image, open_config_file
-from src.config import DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH
+from src.config import APP_NAME, DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH
 
 if is_tray_supported():
     import pystray
@@ -31,7 +31,7 @@ class TrayApp:
             )
 
         self.icon = pystray.Icon(
-            "WakeTheDrive", create_icon_image(), "WakeTheDrive", pystray.Menu(build_menu_items)
+            APP_NAME, create_icon_image(), APP_NAME, pystray.Menu(build_menu_items)
         )
 
     def run(self):

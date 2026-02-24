@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.config import CONFIG_FILE_PATH, DEFAULT_INTERVAL, HEARTBEAT_FILENAME
+from src.config import APP_NAME, CONFIG_FILE_PATH, DEFAULT_INTERVAL, HEARTBEAT_FILENAME
 
 # Default config values
 DEFAULT_CONFIG = {
@@ -28,7 +28,7 @@ def load_config() -> dict:
         if isinstance(data.get("heartbeat_filename"), str) and data["heartbeat_filename"]:
             config["heartbeat_filename"] = data["heartbeat_filename"]
     except (json.JSONDecodeError, OSError, ValueError) as e:
-        print(f"[WakeTheDrive] Warning: could not read config file '{CONFIG_FILE_PATH}': {e}")
+        print(f"[{APP_NAME}] Warning: could not read config file '{CONFIG_FILE_PATH}': {e}")
     return config
 
 
@@ -42,7 +42,7 @@ def save_config(config: dict) -> None:
             json.dump(config, f, indent=2)
             f.write("\n")
     except OSError as e:
-        print(f"[WakeTheDrive] Warning: could not write config file '{CONFIG_FILE_PATH}': {e}")
+        print(f"[{APP_NAME}] Warning: could not write config file '{CONFIG_FILE_PATH}': {e}")
 
 
 def ensure_config() -> dict:
@@ -52,5 +52,5 @@ def ensure_config() -> dict:
     """
     if not os.path.isfile(CONFIG_FILE_PATH):
         save_config(DEFAULT_CONFIG)
-        print(f"[WakeTheDrive] Created default config: {CONFIG_FILE_PATH}")
+        print(f"[{APP_NAME}] Created default config: {CONFIG_FILE_PATH}")
     return load_config()

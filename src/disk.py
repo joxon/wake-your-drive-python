@@ -4,6 +4,7 @@ from datetime import datetime
 import threading
 
 from src.config import (
+    APP_NAME,
     HEARTBEAT_FILE_PATH,
     PATH_DISPLAY,
     IS_MAC,
@@ -53,7 +54,7 @@ class DiskPulseThread(threading.Thread):
                     self.last_pulse = now
                     print(f"[{now}] Pulse sent to {PATH_DISPLAY}")
                     if self.tray_icon:
-                        self.tray_icon.title = f"WakeTheDrive: Last pulse at {now}"
+                        self.tray_icon.title = f"{APP_NAME}: Last pulse at {now}"
                         # This is a bit of a hack to update the menu item text
                         # pystray doesn't have a direct way to update menu items dynamically
                         # A better approach would be to recreate the menu on change,

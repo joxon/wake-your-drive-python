@@ -1,7 +1,7 @@
 
 import subprocess
 
-from src.config import IS_WINDOWS, IS_MAC, IS_LINUX, ES_CONTINUOUS, ES_SYSTEM_REQUIRED
+from src.config import APP_NAME, IS_WINDOWS, IS_MAC, IS_LINUX, ES_CONTINUOUS, ES_SYSTEM_REQUIRED
 
 # Optional: System Tray support
 try:
@@ -47,7 +47,7 @@ def open_config_file(path: str) -> None:
         else:
             subprocess.Popen(["xdg-open", path])
     except Exception as e:
-        print(f"[WakeTheDrive] Warning: could not open config file: {e}")
+        print(f"[{APP_NAME}] Warning: could not open config file: {e}")
 
 
 def create_icon_image():
