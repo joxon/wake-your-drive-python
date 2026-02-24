@@ -4,7 +4,7 @@ A cross-platform utility designed to prevent physical hard drives from spinning 
 
 ## 1. Functional Requirements
 - **Automatic Targeting**: The application must identify and target the physical drive from which it is currently executing.
-- **Pulse Mechanism**: Must perform a write operation to a "heartbeat" file at a configurable interval (default: 60 seconds).
+- **Pulse Mechanism**: Must perform a write operation to a "heartbeat" file at a configurable interval (default: 1 second).
 - **Physical Sync**: Must bypass OS write caches to ensure the physical drive head moves/activity occurs (e.g., `fsync` on Windows/Linux, `F_FULLFSYNC` on macOS).
 - **System Sleep Prevention**: Must inform the OS to prevent system-wide sleep while the application is active.
 - **Background Operation**: Must run without a persistent terminal or console window.
@@ -24,7 +24,7 @@ A cross-platform utility designed to prevent physical hard drives from spinning 
 | **GUI Layer** | `pystray` + `Pillow` | `pystray` + `Pillow` | `pystray` + `Pillow` |
 
 ### File System Impact
-- **File Name**: `.drive_heartbeat`
+- **File Name**: `WakeTheDrive.heartbeat.txt`
 - **Size**: < 50 bytes per pulse.
 - **Cleanup**: The file must be deleted immediately upon application exit.
 

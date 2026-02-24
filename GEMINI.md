@@ -8,7 +8,7 @@ This document takes absolute precedence over general workflows. All changes to t
 - **Low-Level Precision**: Platform-specific disk flushing (like `F_FULLFSYNC` on macOS) must be preserved to ensure hardware-level wakefulness.
 
 ## 2. Engineering Standards
-- **Zero-Footprint Cleanup**: The heartbeat file (`.drive_heartbeat`) must be deleted in a `finally` block or signal handler. No temporary files should persist after exit.
+- **Zero-Footprint Cleanup**: The heartbeat file (`WakeTheDrive.heartbeat.txt`) must be deleted in a `finally` block or signal handler. No temporary files should persist after exit.
 - **Thread Safety**: The system tray (UI) must run on the main thread, while the disk pulse logic must run on a background daemon thread to prevent UI freezing.
 - **Dependency Management**: Any new library must be added to all three build scripts (`build_exe.bat`, `build_mac.sh`, `build_linux.sh`) immediately.
 - **Console-Less Execution**: The application must default to "Windowed/No-Console" mode in production builds to remain unobtrusive.

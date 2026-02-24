@@ -20,7 +20,7 @@ python -c "import pystray, PIL; print('GUI deps OK')"
 
 ## Run Commands
 
-### Default (60-second interval)
+### Default (1-second interval)
 ```bash
 python -m src
 ```
@@ -39,10 +39,11 @@ Once running, right-click (or left-click on some platforms) the tray icon to see
 | Menu item | Description |
 |---|---|
 | `Drive: <letter or />` | Display-only — the target drive being kept awake |
-| `File Path: <path>` | Display-only — directory where the heartbeat file is written |
-| `Last Pulse: <timestamp>` | Display-only — updates each time a heartbeat is written; re-evaluate by reopening the menu |
-| `Config: <path>` | Clickable — opens the JSON config file in the default OS editor |
-| **Exit** | Stops the daemon thread, removes the heartbeat file, and quits |
+| `Last Pulse: <timestamp>` | Display-only — re-evaluated each time the menu is opened |
+| *(separator)* | |
+| `Click to open: <path>` | Clickable — opens `BASE_DIR` in the OS file manager |
+| `Click to edit config: <path>` | Clickable — opens the JSON config file in the default OS editor |
+| `Click to exit` | Stops the daemon thread, removes the heartbeat file, and quits |
 
 ## Executing a GUI Run (Step-by-Step)
 

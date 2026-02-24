@@ -15,7 +15,7 @@ pip install pystray Pillow
 
 ## Run Commands
 
-### Default (60-second interval)
+### Default (1-second interval)
 ```bash
 python -m src
 ```
@@ -34,8 +34,8 @@ python -m src --help
 
 - If `pystray` and `Pillow` are available: starts silently with a **green system-tray icon**. Use the tray menu to see the last pulse time and to exit.
 - If `pystray` / `Pillow` are missing: runs in **CLI mode**. Press `Ctrl+C` to stop.
-- On startup the program reads (or creates) a config file and writes a `.drive_heartbeat` file at the configured interval to keep the drive awake.
-- On exit the `.drive_heartbeat` file is always deleted (guaranteed by a `finally` block).
+- On startup the program reads (or creates) a config file and writes a `WakeTheDrive.heartbeat.txt` file at the configured interval to keep the drive awake.
+- On exit the `WakeTheDrive.heartbeat.txt` file is always deleted (guaranteed by a `finally` block).
 
 ## Executing a Run (Step-by-Step)
 

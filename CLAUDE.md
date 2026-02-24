@@ -49,8 +49,8 @@ Single source of truth for all constants and settings. Import from here; never h
 | Symbol | Type | Description |
 |---|---|---|
 | `IS_WINDOWS`, `IS_MAC`, `IS_LINUX` | `bool` | Platform flags |
-| `DEFAULT_INTERVAL` | `int` | Heartbeat interval in seconds (60) |
-| `HEARTBEAT_FILENAME` | `str` | `.drive_heartbeat` |
+| `DEFAULT_INTERVAL` | `int` | Heartbeat interval in seconds (1) |
+| `HEARTBEAT_FILENAME` | `str` | `WakeTheDrive.heartbeat.txt` |
 | `HEARTBEAT_FILE_PATH` | `str` | Absolute path to the heartbeat file |
 | `BASE_DIR` | `str` | Directory of the executable (frozen) or `src/` (dev) |
 | `DRIVE_DISPLAY` | `str` | Drive letter (Windows) or `/` (Unix) |
@@ -75,19 +75,25 @@ System tray UI. Must always run on the **main thread** (pystray requirement).
 
 | Method | Description |
 |---|---|
-| `__init__(stop_callback, pulse_thread)` | Builds pystray menu with drive info + last pulse (live lambda) |
+| `__init__(stop_callback, pulse_thread)` | Builds pystray menu via `build_menu_items` callable (re-evaluated on each open) |
 | `run()` | Calls `self.icon.run()` — blocks main thread |
 | `on_exit(icon, item)` | Calls `stop_callback()` then `icon.stop()` |
 | `title` (property) | Get/set pystray icon tooltip |
 
-Menu items use `lambda text: f"..."` so they re-evaluate on each menu open, picking up `pulse_thread.last_pulse` dynamically.
+Menu structure (in order):
+1. `Drive: <letter or />` — display-only, disabled
+2. `Last Pulse: <timestamp>` — display-only, disabled (re-evaluated each menu open via `build_menu_items` callable)
+3. *(separator)*
+4. `Click to open: <PATH_DISPLAY>` — opens `BASE_DIR` in the file manager
+5. `Click to edit config: <CONFIG_FILE_PATH>` — opens the JSON config file in the default editor
+6. `Click to exit` — stops the application
 
 ### `src/settings.py`
 Runtime configuration file management. Depends on `config.py`; only imported by `__main__.py`.
 
 | Symbol | Type | Description |
 |---|---|---|
-| `DEFAULT_CONFIG` | `dict` | Default values: `{"interval_seconds": 60, "heartbeat_filename": ".drive_heartbeat"}` |
+| `DEFAULT_CONFIG` | `dict` | Default values: `{"interval_seconds": 1, "heartbeat_filename": "WakeTheDrive.heartbeat.txt"}` |
 
 | Function | Description |
 |---|---|
@@ -103,6 +109,7 @@ Four standalone helpers.
 | `is_tray_supported()` | Returns `True` if `pystray` and `PIL` imported successfully |
 | `set_sleep_prevention(active)` | Windows: calls `SetThreadExecutionState`. macOS/Linux: currently a no-op (platform handles it differently — see roadmap) |
 | `open_config_file(path)` | Opens `path` in the OS default editor. Windows: `os.startfile`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
+| `open_file_explorer(path)` | Opens `path` in the OS default file manager. Windows: `explorer`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
 | `create_icon_image()` | Returns a 64×64 RGBA `PIL.Image` — green circle on transparent background |
 
 ### `src/__main__.py` — `WakeTheDrive` + `main()`
@@ -117,7 +124,7 @@ Orchestrator. Parses `--interval` arg, calls `ensure_config()` to load/create th
 ## Core Invariants (from GEMINI.md — non-negotiable)
 
 1. **Cross-platform**: Every feature must work on Windows, macOS, and Linux, or have a safe fallback. Use `IS_WINDOWS` / `IS_MAC` / `IS_LINUX` flags from `config.py`.
-2. **Zero-footprint cleanup**: `.drive_heartbeat` must be deleted in a `finally` block. Never remove that guarantee.
+2. **Zero-footprint cleanup**: `WakeTheDrive.heartbeat.txt` must be deleted in a `finally` block. Never remove that guarantee.
 3. **Thread safety**: Tray UI on main thread. Disk logic on daemon thread. Never swap these.
 4. **Low-level flush preserved**: `F_FULLFSYNC` on macOS must remain to guarantee hardware-level wakefulness.
 5. **New dependencies**: Must be added to all three build scripts (`build_exe.bat`, `build_mac.sh`, `build_linux.sh`) and `bin/requirements.txt` simultaneously.
