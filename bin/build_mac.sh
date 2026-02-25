@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 echo ""
 echo "Building WakeTheDrive for macOS..."
-pyinstaller --onefile --windowed --name "WakeTheDrive_Mac" ../src/__main__.py
+pyinstaller --onefile --windowed --name "WakeTheDrive_Mac" ../app/__main__.py
 
 echo ""
 echo "Done! Your executable is in the 'dist' folder."

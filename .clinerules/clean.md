@@ -13,8 +13,8 @@ Build artifacts accumulate in several locations:
 | `bin/*.spec` | PyInstaller spec files auto-generated during a build |
 | `bin/venv/` | Python virtual environment created by the build scripts |
 | `build/` | Project-root-level scratch space (gitignored) |
-| `src/__pycache__/` | Python bytecode cache for the source package |
-| `src/*.pyc` | Compiled Python files (if any stray outside `__pycache__`) |
+| `app/__pycache__/` | Python bytecode cache for the source package |
+| `app/*.pyc` | Compiled Python files (if any stray outside `__pycache__`) |
 
 ## Clean Commands
 
@@ -31,27 +31,27 @@ rm -rf bin/venv
 rm -rf build
 
 # Remove Python bytecode caches
-find src -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-find src -name "*.pyc" -delete 2>/dev/null || true
+find app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+find app -name "*.pyc" -delete 2>/dev/null || true
 ```
 
 ### Distributables only (keep venv for faster rebuilds)
 
 ```bash
 rm -rf bin/dist bin/build bin/*.spec build
-find src -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+find app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 ```
 
 ### Bytecode cache only
 
 ```bash
-find src -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-find src -name "*.pyc" -delete 2>/dev/null || true
+find app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+find app -name "*.pyc" -delete 2>/dev/null || true
 ```
 
 ## Executing a Clean (Step-by-Step)
 
-1. Confirm you are in the project root (the directory containing `src/` and `bin/`).
+1. Confirm you are in the project root (the directory containing `app/` and `bin/`).
 2. Decide which clean level is needed:
    - **Full clean** — use before a release build or when switching platforms.
    - **Distributables only** — use to re-run a build without re-creating the venv.
@@ -79,7 +79,7 @@ ls bin/dist bin/build bin/*.spec bin/venv 2>/dev/null && echo "WARNING: artifact
 |---|---|---|
 | `rm: bin/dist: No such file or directory` | Already clean or never built | Safe to ignore — artifacts were not present |
 | `Permission denied` removing `bin/venv` | Running process using the venv | Stop any active build/run; then retry |
-| `find: src: No such file or directory` | Running from inside `bin/` or `src/` | `cd` to the project root and re-run |
+| `find: app: No such file or directory` | Running from inside `bin/` or `app/` | `cd` to the project root and re-run |
 | Artifacts reappear immediately | Another build is running in parallel | Stop the parallel build first |
 
 ## Notes

@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 echo ""
 echo "Building WakeTheDrive for Linux..."
-pyinstaller --onefile --name "WakeTheDrive_Linux" ../src/__main__.py
+pyinstaller --onefile --name "WakeTheDrive_Linux" ../app/__main__.py
 
 echo ""
 echo "Done! Your executable is in the 'dist' folder."

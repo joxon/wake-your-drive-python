@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 import threading
 
-from src.config import (
+from app.config import (
     APP_NAME,
     HEARTBEAT_FILE_PATH,
     PATH_DISPLAY,
@@ -11,8 +11,23 @@ from src.config import (
     IS_WINDOWS,
     F_FULLFSYNC,
     FILE_ATTRIBUTE_HIDDEN,
+    ES_CONTINUOUS,
+    ES_SYSTEM_REQUIRED,
 )
-from src.utils import set_sleep_prevention
+
+
+def set_sleep_prevention(active=True):
+    """
+    Prevents or allows the system to sleep.
+    (Windows only)
+    """
+    if IS_WINDOWS:
+        try:
+            import ctypes
+            state = (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) if active else ES_CONTINUOUS
+            ctypes.windll.kernel32.SetThreadExecutionState(state)
+        except Exception as e:
+            print(f"Failed to set sleep prevention state: {e}")
 
 
 class DiskPulseThread(threading.Thread):

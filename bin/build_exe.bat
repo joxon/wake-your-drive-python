@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 echo.
 echo Building WakeTheDrive.exe...
-pyinstaller --onefile --noconsole --name "WakeTheDrive" ../src/__main__.py
+pyinstaller --onefile --noconsole --name "WakeTheDrive" ../app/__main__.py
 
 echo.
 echo Done! Your executable is in the "dist" folder.

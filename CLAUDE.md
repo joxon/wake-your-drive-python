@@ -10,7 +10,7 @@ This document is the authoritative guide for Claude when working on the WakeTheD
 
 **Repository:** `https://github.com/joxon/wake-your-drive-python`
 **Language:** Python 3.x
-**Entry point:** `python -m src` (runs `src/__main__.py`)
+**Entry point:** `python -m app` (runs `app/__main__.py`)
 
 ---
 
@@ -18,7 +18,7 @@ This document is the authoritative guide for Claude when working on the WakeTheD
 
 ```
 wake-your-drive-python/
-├── src/
+├── app/
 │   ├── __init__.py       # Package marker
 │   ├── __main__.py       # Entry point, CLI arg parsing, WakeTheDrive orchestrator class
 │   ├── config.py         # Platform detection, all constants & path resolution
@@ -43,7 +43,7 @@ wake-your-drive-python/
 
 ## Module Responsibilities
 
-### `src/config.py`
+### `app/config.py`
 Single source of truth for all constants and settings. Import from here; never hardcode values elsewhere.
 
 | Symbol | Type | Description |
@@ -52,13 +52,13 @@ Single source of truth for all constants and settings. Import from here; never h
 | `DEFAULT_INTERVAL` | `int` | Heartbeat interval in seconds (1) |
 | `HEARTBEAT_FILENAME` | `str` | `WakeTheDrive.heartbeat.txt` |
 | `HEARTBEAT_FILE_PATH` | `str` | Absolute path to the heartbeat file |
-| `BASE_DIR` | `str` | Directory of the executable (frozen) or `src/` (dev) |
+| `BASE_DIR` | `str` | Directory of the executable (frozen) or `app/` (dev) |
 | `DRIVE_DISPLAY` | `str` | Drive letter (Windows) or `/` (Unix) |
 | `PATH_DISPLAY` | `str` | Full `BASE_DIR` for display in tray menu |
 | `ES_CONTINUOUS`, `ES_SYSTEM_REQUIRED`, `FILE_ATTRIBUTE_HIDDEN` | `int\|None` | Windows-only ctypes constants |
 | `F_FULLFSYNC` | `int\|None` | macOS-only fcntl constant |
 
-### `src/disk.py` — `DiskPulseThread(threading.Thread)`
+### `app/disk.py` — `DiskPulseThread(threading.Thread)`
 Background daemon thread. Owns all disk I/O and sleep prevention.
 
 | Method | Description |
@@ -70,7 +70,7 @@ Background daemon thread. Owns all disk I/O and sleep prevention.
 
 **Key invariant:** The heartbeat file deletion happens in a `finally` block — never remove this guarantee.
 
-### `src/tray.py` — `TrayApp`
+### `app/tray.py` — `TrayApp`
 System tray UI. Must always run on the **main thread** (pystray requirement).
 
 | Method | Description |
@@ -88,7 +88,7 @@ Menu structure (in order):
 5. `Click to edit config: <CONFIG_FILE_PATH>` — opens the JSON config file in the default editor
 6. `Click to exit` — stops the application
 
-### `src/settings.py`
+### `app/settings.py`
 Runtime configuration file management. Depends on `config.py`; only imported by `__main__.py`.
 
 | Symbol | Type | Description |
@@ -101,7 +101,7 @@ Runtime configuration file management. Depends on `config.py`; only imported by 
 | `save_config(config)` | Writes `config` dict to `CONFIG_FILE_PATH` as pretty-printed JSON. Logs warning on failure. |
 | `ensure_config()` | Creates the config file with defaults if it does not exist, then calls `load_config()` and returns the result. Called once at startup. |
 
-### `src/utils.py`
+### `app/utils.py`
 Four standalone helpers.
 
 | Function | Description |
@@ -112,7 +112,7 @@ Four standalone helpers.
 | `open_file_explorer(path)` | Opens `path` in the OS default file manager. Windows: `explorer`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
 | `create_icon_image()` | Returns a 64×64 RGBA `PIL.Image` — green circle on transparent background |
 
-### `src/__main__.py` — `WakeTheDrive` + `main()`
+### `app/__main__.py` — `WakeTheDrive` + `main()`
 Orchestrator. Parses `--interval` arg, calls `ensure_config()` to load/create the config file, creates `DiskPulseThread` and (if available) `TrayApp`, wires them together, blocks until exit. CLI `--interval` takes precedence over the config file value.
 
 **Thread model:**
@@ -138,9 +138,9 @@ Orchestrator. Parses `--interval` arg, calls `ensure_config()` to load/create th
 ### Run from source
 ```bash
 pip install pystray Pillow
-python -m src
+python -m app
 # Custom interval:
-python -m src --interval 30
+python -m app --interval 30
 ```
 
 ### Build standalone binaries

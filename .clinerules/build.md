@@ -85,6 +85,6 @@ If you add a new Python dependency to the project, add it to `bin/requirements.t
 
 ## Notes
 
-- `bin/venv/` is created inside `bin/` — do not run the scripts from the project root or `src/`.
+- `bin/venv/` is created inside `bin/` — do not run the scripts from the project root or `app/`.
 - `build/` at the project root is gitignored local build scratch space; the actual distributable artifacts are in `bin/dist/`.
 - PyInstaller spec/work files (`*.spec`, `build/`) inside `bin/` are also gitignored.

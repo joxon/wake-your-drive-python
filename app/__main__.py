@@ -3,11 +3,10 @@ import argparse
 import time
 import sys
 
-from src.config import DEFAULT_INTERVAL
-from src.disk import DiskPulseThread
-from src.settings import ensure_config
-from src.tray import TrayApp
-from src.utils import is_tray_supported
+from app.config import DEFAULT_INTERVAL
+from app.disk import DiskPulseThread
+from app.settings import ensure_config
+from app.tray import TrayApp, is_tray_supported
 
 class WakeTheDrive:
     def __init__(self, interval):

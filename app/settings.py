@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.config import APP_NAME, CONFIG_FILE_PATH, DEFAULT_INTERVAL, HEARTBEAT_FILENAME
+from app.config import APP_NAME, CONFIG_FILE_PATH, DEFAULT_INTERVAL, HEARTBEAT_FILENAME
 
 # Default config values
 DEFAULT_CONFIG = {

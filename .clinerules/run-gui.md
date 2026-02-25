@@ -22,15 +22,15 @@ python -c "import pystray, PIL; print('GUI deps OK')"
 
 ### Default (1-second interval)
 ```bash
-python -m src
+python -m app
 ```
 
 ### Custom interval (e.g. 30 seconds)
 ```bash
-python -m src --interval 30
+python -m app --interval 30
 ```
 
-Run from the **project root** (the directory containing `src/`).
+Run from the **project root** (the directory containing `app/`).
 
 ## Tray Menu Items
 
@@ -49,7 +49,7 @@ Once running, right-click (or left-click on some platforms) the tray icon to see
 
 1. Confirm you are in the project root.
 2. Run `python -c "import pystray, PIL; print('OK')"` — if it prints `OK`, GUI mode will start.
-3. Run `python -m src` (add `--interval N` for a custom interval).
+3. Run `python -m app` (add `--interval N` for a custom interval).
 4. Look for the green circle icon in the system tray / menu bar.
 5. Open the tray menu to confirm `Last Pulse` updates at the configured interval.
 6. To stop: click **Exit** in the tray menu.
@@ -62,19 +62,19 @@ Once running, right-click (or left-click on some platforms) the tray icon to see
 | No tray icon on Linux (headless / SSH session) | No display server available | GUI mode requires a desktop session; use CLI mode instead |
 | Icon appears but menu doesn't open | Platform tray API quirk | Try left-click or right-click; behaviour varies by OS/desktop environment |
 | `Last Pulse` timestamp does not update | Menu text is evaluated at open time — this is expected | Re-open the menu to see the latest value |
-| `ModuleNotFoundError: No module named 'src'` | Running from inside `src/` | `cd` to project root and re-run |
+| `ModuleNotFoundError: No module named 'app'` | Running from inside `app/` | `cd` to project root and re-run |
 | Program exits immediately after launch | Unhandled exception at startup | Run in a terminal to see the traceback |
 
 ## Tray UI Architecture Notes
 
-- `TrayApp` (in `src/tray.py`) **must run on the main thread** — pystray requires it.
-- `DiskPulseThread` (in `src/disk.py`) runs as a background daemon thread.
+- `TrayApp` (in `app/tray.py`) **must run on the main thread** — pystray requires it.
+- `DiskPulseThread` (in `app/disk.py`) runs as a background daemon thread.
 - Menu item labels are `lambda` expressions so they re-read `pulse_thread.last_pulse` each time the menu is opened.
 - The icon tooltip (`WakeTheDrive`) can be updated programmatically via `TrayApp.title`.
 
 ## Notes
 
-- `python -m src` always runs `src/__main__.py`.
+- `python -m app` always runs `app/__main__.py`.
 - The `--interval` CLI flag takes precedence over the config file value.
 - The config file is created automatically on first run and can be edited via the tray menu.
 - To build a standalone binary that runs in tray mode without a terminal, see `.clinerules/build.md`.

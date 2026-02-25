@@ -44,7 +44,7 @@ pip install pystray Pillow
 ### Run from Source
 
 ```bash
-python -m src
+python -m app
 ```
 
 ### Custom Pulse Interval
@@ -52,7 +52,7 @@ python -m src
 Use the `--interval` flag to set the time (in seconds) between disk pulses:
 
 ```bash
-python -m src --interval 30
+python -m app --interval 30
 ```
 
 *Default interval is **1 second**.*
@@ -131,7 +131,7 @@ Output: `bin/dist/WakeTheDrive_Linux`
 
 ```
 WakeTheDrive/
-├── src/
+├── app/
 │   ├── __init__.py     # Package marker
 │   ├── __main__.py     # Entry point & CLI argument parsing
 │   ├── config.py       # Platform detection & app settings
