@@ -8,6 +8,7 @@ from app.config import (
     HEARTBEAT_FILE_PATH,
     PATH_DISPLAY,
     IS_MAC,
+    IS_LINUX,
     IS_WINDOWS,
     F_FULLFSYNC,
     FILE_ATTRIBUTE_HIDDEN,
@@ -71,7 +72,14 @@ class DiskPulseThread(threading.Thread):
                     print(f"[{now_str}] Pulse sent to {PATH_DISPLAY}")
                     if self.tray_icon:
                         self.tray_icon.title = f"{APP_NAME}: Last pulse at {now_str}"
-                        self.tray_icon.update_menu()
+                        # On Windows, update_menu() sends a Win32 message that must be
+                        # processed by the main thread - calling it from a background
+                        # thread causes a deadlock. The menu lambda already re-reads
+                        # last_pulse on every open, so no update_menu() is needed there.
+                        # On macOS/Linux, pystray caches the NSMenu/GTK menu and needs
+                        # an explicit nudge to pick up the new label text.
+                        if IS_MAC or IS_LINUX:
+                            self.tray_icon.update_menu()
 
                 except Exception as e:
                     print(f"Error during disk pulse: {e}")

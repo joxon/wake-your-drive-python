@@ -119,7 +119,11 @@ class TrayApp:
         return ""
 
     def update_menu(self):
-        """Force pystray to rebuild the menu from the build_menu_items callable."""
+        """
+        Force pystray to rebuild the menu from the build_menu_items callable.
+        Safe to call from a background thread on macOS and Linux.
+        Do NOT call from a background thread on Windows. use the title setter instead.
+        """
         if self.icon:
             try:
                 self.icon.update_menu()
