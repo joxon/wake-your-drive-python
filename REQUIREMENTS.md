@@ -20,7 +20,6 @@ A cross-platform utility designed to prevent physical hard drives from spinning 
 | :--- | :--- | :--- | :--- |
 | **API for Sleep** | `SetThreadExecutionState` | `caffeinate` | `systemd-inhibit` |
 | **Disk Flush** | `os.fsync()` | `fcntl.F_FULLFSYNC` | `os.fsync()` |
-| **File Hiding** | `SetFileAttributesW` (Hidden) | Dot-prefix (`.`) | Dot-prefix (`.`) |
 | **GUI Layer** | `pystray` + `Pillow` | `pystray` + `Pillow` | `pystray` + `Pillow` |
 
 ### File System Impact

@@ -113,8 +113,7 @@ Output: `bin/dist/WakeTheDrive_Linux`
 1. On launch, WakeTheDrive determines the directory of its own executable and sets that as the target drive.
 2. A background daemon thread starts and writes a small heartbeat file (`WakeTheDrive.heartbeat.txt`) to that directory at the configured interval.
 3. After each write, it calls the platform-appropriate flush function to force the OS to commit the write to the physical disk — ensuring the drive head actually moves.
-4. On Windows, the heartbeat file is marked as hidden.
-5. On exit (via tray menu or `Ctrl+C`), the heartbeat file is deleted and sleep prevention is released.
+4. On exit (via tray menu or `Ctrl+C`), the heartbeat file is deleted and sleep prevention is released.
 
 ### Platform Details
 
@@ -122,7 +121,6 @@ Output: `bin/dist/WakeTheDrive_Linux`
 | :--- | :--- | :--- | :--- |
 | Sleep Prevention | `SetThreadExecutionState` | `caffeinate` | `systemd-inhibit` |
 | Disk Flush | `os.fsync()` | `fcntl.F_FULLFSYNC` | `os.fsync()` |
-| File Hiding | `SetFileAttributesW` | Dot-prefix (`.`) | Dot-prefix (`.`) |
 | GUI Layer | `pystray` + `Pillow` | `pystray` + `Pillow` | `pystray` + `Pillow` |
 
 ---

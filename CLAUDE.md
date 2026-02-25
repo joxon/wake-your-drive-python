@@ -55,7 +55,7 @@ Single source of truth for all constants and settings. Import from here; never h
 | `BASE_DIR` | `str` | Directory of the executable (frozen) or `app/` (dev) |
 | `DRIVE_DISPLAY` | `str` | Drive letter (Windows) or `/` (Unix) |
 | `PATH_DISPLAY` | `str` | Full `BASE_DIR` for display in tray menu |
-| `ES_CONTINUOUS`, `ES_SYSTEM_REQUIRED`, `FILE_ATTRIBUTE_HIDDEN` | `int\|None` | Windows-only ctypes constants |
+| `ES_CONTINUOUS`, `ES_SYSTEM_REQUIRED` | `int\|None` | Windows-only ctypes constants |
 | `F_FULLFSYNC` | `int\|None` | macOS-only fcntl constant |
 
 ### `app/disk.py` — `DiskPulseThread(threading.Thread)`
@@ -64,7 +64,7 @@ Background daemon thread. Owns all disk I/O and sleep prevention.
 | Method | Description |
 |---|---|
 | `__init__(interval, tray_icon=None)` | Sets up interval, running flag, last_pulse |
-| `run()` | Main loop: enables sleep prevention, writes heartbeat, flushes, hides file (Windows), sleeps in 1s ticks |
+| `run()` | Main loop: enables sleep prevention, writes heartbeat, flushes, sleeps in 1s ticks |
 | `stop()` | Sets `self.running = False` to break the inner sleep loop |
 | `cleanup()` | Called in `finally`: deletes heartbeat file, disables sleep prevention |
 
@@ -170,7 +170,6 @@ Each script: creates a venv, installs `bin/requirements.txt`, then runs PyInstal
 |---|---|---|---|
 | Sleep prevention | `SetThreadExecutionState` (ctypes) | `caffeinate` subprocess | `systemd-inhibit` |
 | Disk flush | `os.fsync()` | `fcntl.F_FULLFSYNC` | `os.fsync()` |
-| File hiding | `SetFileAttributesW` (hidden attribute) | Dot-prefix (`.`) | Dot-prefix (`.`) |
 | GUI | `pystray` + `Pillow` | `pystray` + `Pillow` | `pystray` + `Pillow` |
 | CLI fallback | ✓ | ✓ | ✓ |
 
