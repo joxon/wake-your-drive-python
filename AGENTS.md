@@ -21,11 +21,10 @@ wake-your-drive-python/
 ├── app/
 │   ├── __init__.py       # Package marker
 │   ├── __main__.py       # Entry point, CLI arg parsing, WakeTheDrive orchestrator class
-│   ├── config.py         # Platform detection, all constants & path resolution
-│   ├── disk.py           # DiskPulseThread — background daemon thread, heartbeat logic
-│   ├── tray.py           # TrayApp — system tray UI (pystray)
-│   ├── settings.py       # Runtime config file management (load/save/ensure)
-│   └── utils.py          # sleep prevention, tray availability check, icon generation
+│   ├── constants.py      # Shared constants & path resolution (multi-module symbols only)
+│   ├── config.py         # Runtime config file management (load/save/ensure)
+│   ├── disk.py           # DiskPulseThread — background daemon thread, heartbeat & sleep logic
+│   └── tray.py           # TrayApp — system tray UI, OS-shell helpers, icon generation
 ├── bin/
 │   ├── requirements.txt  # pip deps for builds: pyinstaller, pystray, Pillow
 │   ├── build_mac.sh      # PyInstaller build script → dist/WakeTheDrive_Mac
@@ -43,23 +42,27 @@ wake-your-drive-python/
 
 ## Module Responsibilities
 
-### `app/config.py`
-Single source of truth for all constants and settings. Import from here; never hardcode values elsewhere.
+### `app/constants.py`
+Single source of truth for all shared constants and paths. Import from here; never hardcode values elsewhere. Only symbols used by **more than one module** live here.
 
 | Symbol | Type | Description |
 |---|---|---|
 | `IS_WINDOWS`, `IS_MAC`, `IS_LINUX` | `bool` | Platform flags |
+| `APP_NAME` | `str` | `"WakeTheDrive"` |
 | `DEFAULT_INTERVAL` | `int` | Heartbeat interval in seconds (1) |
 | `HEARTBEAT_FILENAME` | `str` | `WakeTheDrive.heartbeat.txt` |
-| `HEARTBEAT_FILE_PATH` | `str` | Absolute path to the heartbeat file |
 | `BASE_DIR` | `str` | Directory of the executable (frozen) or `app/` (dev) |
-| `DRIVE_DISPLAY` | `str` | Drive letter (Windows) or `/` (Unix) |
-| `PATH_DISPLAY` | `str` | Full `BASE_DIR` for display in tray menu |
-| `ES_CONTINUOUS`, `ES_SYSTEM_REQUIRED` | `int\|None` | Windows-only ctypes constants |
-| `F_FULLFSYNC` | `int\|None` | macOS-only fcntl constant |
+| `PATH_DISPLAY` | `str` | Full `BASE_DIR` for display (shared by `disk.py` and `tray.py`) |
+| `CONFIG_FILE_PATH` | `str` | Absolute path to the JSON config file |
 
 ### `app/disk.py` — `DiskPulseThread(threading.Thread)`
-Background daemon thread. Owns all disk I/O and sleep prevention.
+Background daemon thread. Owns all disk I/O and sleep prevention. Also owns all platform-specific constants that are only relevant to disk/sleep operations.
+
+| Module-level symbol | Description |
+|---|---|
+| `HEARTBEAT_FILE_PATH` | Computed from `BASE_DIR + HEARTBEAT_FILENAME`; only used here |
+| `_ES_CONTINUOUS`, `_ES_SYSTEM_REQUIRED` | Windows ctypes sleep-prevention flags (private) |
+| `_F_FULLFSYNC` | macOS fcntl hardware-flush constant (private) |
 
 | Method | Description |
 |---|---|
@@ -71,7 +74,12 @@ Background daemon thread. Owns all disk I/O and sleep prevention.
 **Key invariant:** The heartbeat file deletion happens in a `finally` block — never remove this guarantee.
 
 ### `app/tray.py` — `TrayApp`
-System tray UI. Must always run on the **main thread** (pystray requirement).
+System tray UI. Must always run on the **main thread** (pystray requirement). Also owns `DRIVE_DISPLAY` (only used in the tray menu) and the `open_config_file` / `open_file_explorer` OS-shell helpers.
+
+| Module-level symbol | Description |
+|---|---|
+| `DRIVE_DISPLAY` | Drive letter (Windows) or `"/"` (Unix); computed from `BASE_DIR` |
+| `TRAY_SUPPORT` | `True` if `pystray` and `PIL` are importable |
 
 | Method | Description |
 |---|---|
@@ -88,19 +96,24 @@ Menu structure (in order):
 5. `Click to edit config: <CONFIG_FILE_PATH>` — opens the JSON config file in the default editor
 6. `Click to exit` — stops the application
 
-### `app/utils.py`
-Four standalone helpers.
+### `app/tray.py` — standalone helpers
+These functions live in `tray.py` because they are only called from the tray layer.
 
 | Function | Description |
 |---|---|
 | `is_tray_supported()` | Returns `True` if `pystray` and `PIL` imported successfully |
-| `set_sleep_prevention(active)` | Windows: calls `SetThreadExecutionState`. macOS/Linux: currently a no-op (platform handles it differently — see roadmap) |
-| `open_config_file(path)` | Opens `path` in the OS default editor. Windows: `os.startfile`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
-| `open_file_explorer(path)` | Opens `path` in the OS default file manager. Windows: `explorer`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
 | `create_icon_image()` | Returns a 64×64 RGBA `PIL.Image` — green circle on transparent background |
+| `open_config_file(path)` | Opens `path` in the OS default editor. Windows: `os.startfile`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
+| `open_file_explorer(path)` | Opens `path` in the OS default file manager. Windows: `os.startfile`. macOS: `open`. Linux: `xdg-open`. Logs warning on failure. |
 
-### `app/settings.py`
-Runtime configuration file management. Depends on `config.py`; only imported by `__main__.py`.
+### `app/disk.py` — standalone helper
+
+| Function | Description |
+|---|---|
+| `set_sleep_prevention(active)` | Windows: calls `SetThreadExecutionState`. macOS/Linux: currently a no-op (see roadmap) |
+
+### `app/config.py`
+Runtime configuration file management. Depends on `constants.py`; only imported by `__main__.py`.
 
 | Symbol | Type | Description |
 |---|---|---|
@@ -123,7 +136,7 @@ Orchestrator. Parses `--interval` arg, calls `ensure_config()` to load/create th
 
 ## Core Invariants (from GEMINI.md — non-negotiable)
 
-1. **Cross-platform**: Every feature must work on Windows, macOS, and Linux, or have a safe fallback. Use `IS_WINDOWS` / `IS_MAC` / `IS_LINUX` flags from `config.py`.
+1. **Cross-platform**: Every feature must work on Windows, macOS, and Linux, or have a safe fallback. Use `IS_WINDOWS` / `IS_MAC` / `IS_LINUX` flags from `constants.py`.
 2. **Zero-footprint cleanup**: `WakeTheDrive.heartbeat.txt` must be deleted in a `finally` block. Never remove that guarantee.
 3. **Thread safety**: Tray UI on main thread. Disk logic on daemon thread. Never swap these.
 4. **Low-level flush preserved**: `F_FULLFSYNC` on macOS must remain to guarantee hardware-level wakefulness.
@@ -173,7 +186,7 @@ Each script: creates a venv, installs `bin/requirements.txt`, then runs PyInstal
 | GUI | `pystray` + `Pillow` | `pystray` + `Pillow` | `pystray` + `Pillow` |
 | CLI fallback | ✓ | ✓ | ✓ |
 
-> **Note:** `set_sleep_prevention()` in `utils.py` currently only implements the Windows path. macOS (`caffeinate`) and Linux (`systemd-inhibit`) subprocess calls are not yet implemented — this is a known gap.
+> **Note:** `set_sleep_prevention()` in `disk.py` currently only implements the Windows path. macOS (`caffeinate`) and Linux (`systemd-inhibit`) subprocess calls are not yet implemented — this is a known gap.
 
 ---
 
@@ -190,11 +203,11 @@ Each script: creates a venv, installs `bin/requirements.txt`, then runs PyInstal
 
 ## Adding a New Feature — Checklist
 
-1. If platform-specific: add the flag branch in `config.py` first, import the flag where needed.
+1. If platform-specific: add the flag branch in `constants.py` first, import the flag where needed.
 2. If a new dependency: add to `bin/requirements.txt` **and** all three build scripts.
 3. Disk I/O changes belong in `disk.py` (`DiskPulseThread`).
 4. UI changes belong in `tray.py` (`TrayApp`); remember menu items update lazily via lambdas.
-5. OS-level utilities (sleep, icon) belong in `utils.py`.
-6. Constants and paths belong in `config.py`.
+5. Sleep-prevention changes belong in `disk.py` (`set_sleep_prevention`).
+6. Shared constants and paths belong in `constants.py`; single-consumer values stay in their own module.
 7. Verify the heartbeat file cleanup `finally` block is intact after any change to `DiskPulseThread.run()`.
 8. Test on all three platforms (or at minimum verify the conditional branches are correct).
