@@ -43,10 +43,11 @@ class DiskPulseThread(threading.Thread):
         set_sleep_prevention(True)
         try:
             while self.running:
-                now = datetime.now().strftime("%H:%M:%S")
+                now = datetime.now()
+                now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 try:
                     with open(HEARTBEAT_FILE_PATH, "w") as f:
-                        f.write(f"Pulse: {now}")
+                        f.write(f"Last pulse: {now_str}\n")
                         f.flush()
                         if IS_MAC:
                             try:
@@ -66,14 +67,11 @@ class DiskPulseThread(threading.Thread):
                         except Exception:
                             pass
 
-                    self.last_pulse = now
-                    print(f"[{now}] Pulse sent to {PATH_DISPLAY}")
+                    self.last_pulse = now_str
+                    print(f"[{now_str}] Pulse sent to {PATH_DISPLAY}")
                     if self.tray_icon:
-                        self.tray_icon.title = f"{APP_NAME}: Last pulse at {now}"
-                        # This is a bit of a hack to update the menu item text
-                        # pystray doesn't have a direct way to update menu items dynamically
-                        # A better approach would be to recreate the menu on change,
-                        # but for this simple case, we can live with the title update.
+                        self.tray_icon.title = f"{APP_NAME}: Last pulse at {now_str}"
+                        self.tray_icon.update_menu()
 
                 except Exception as e:
                     print(f"Error during disk pulse: {e}")

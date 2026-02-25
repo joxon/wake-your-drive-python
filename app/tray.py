@@ -82,20 +82,20 @@ class TrayApp:
             return (
                 pystray.MenuItem(f"Drive: {DRIVE_DISPLAY}", None, enabled=False),
                 pystray.MenuItem(
-                    f"Last Pulse: {self.pulse_thread.last_pulse}",
+                    lambda item: f"Last Pulse: {self.pulse_thread.last_pulse}",
                     None,
                     enabled=False,
                 ),
                 pystray.Menu.SEPARATOR,
                 pystray.MenuItem(
-                    f"Click to open: {PATH_DISPLAY}",
+                    f"Open folder: {PATH_DISPLAY}",
                     lambda icon, item: open_file_explorer(BASE_DIR),
                 ),
                 pystray.MenuItem(
-                    f"Click to edit config: {CONFIG_FILE_PATH}",
+                    f"Edit config: {CONFIG_FILE_PATH}",
                     lambda icon, item: open_config_file(CONFIG_FILE_PATH),
                 ),
-                pystray.MenuItem("Click to exit", self.on_exit),
+                pystray.MenuItem("Exit", self.on_exit),
             )
 
         self.icon = pystray.Icon(
@@ -117,6 +117,14 @@ class TrayApp:
         if self.icon:
             return self.icon.title
         return ""
+
+    def update_menu(self):
+        """Force pystray to rebuild the menu from the build_menu_items callable."""
+        if self.icon:
+            try:
+                self.icon.update_menu()
+            except Exception:
+                pass
 
     @title.setter
     def title(self, text):
