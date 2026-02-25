@@ -12,11 +12,9 @@ if IS_WINDOWS:
     import ctypes
     ES_CONTINUOUS = 0x80000000
     ES_SYSTEM_REQUIRED = 0x00000001
-    FILE_ATTRIBUTE_HIDDEN = 0x02
 else:
     ES_CONTINUOUS = None
     ES_SYSTEM_REQUIRED = None
-    FILE_ATTRIBUTE_HIDDEN = None
 
 # macOS-specific constants
 if IS_MAC:

@@ -11,7 +11,6 @@ from app.config import (
     IS_LINUX,
     IS_WINDOWS,
     F_FULLFSYNC,
-    FILE_ATTRIBUTE_HIDDEN,
     ES_CONTINUOUS,
     ES_SYSTEM_REQUIRED,
 )
@@ -22,6 +21,9 @@ def set_sleep_prevention(active=True):
     Prevents or allows the system to sleep.
     (Windows only)
     """
+    # Windows only: tell the OS not to sleep or turn off the display while we're running.
+    # ES_SYSTEM_REQUIRED keeps the system awake; ES_CONTINUOUS makes the state sticky so
+    # it persists until explicitly cleared (called again with just ES_CONTINUOUS).
     if IS_WINDOWS:
         try:
             import ctypes
@@ -47,9 +49,22 @@ class DiskPulseThread(threading.Thread):
                 now = datetime.now()
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 try:
+                    # NOTE: Do NOT set the Windows hidden-file attribute (FILE_ATTRIBUTE_HIDDEN /
+                    # SetFileAttributesW) on the heartbeat file.  Windows' C runtime opens files
+                    # with _O_CREAT | _O_TRUNC, which returns ERROR_ACCESS_DENIED when the target
+                    # file already has the hidden attribute set.  The result is a silent
+                    # PermissionError on every pulse after the first, so the file is created once
+                    # and never updated again.
                     with open(HEARTBEAT_FILE_PATH, "w") as f:
                         f.write(f"Last pulse: {now_str}\n")
                         f.flush()
+                        # Force a hardware-level flush so the drive head physically moves.
+                        # On macOS, os.fsync() only flushes to the kernel's unified buffer
+                        # cache; the drive may not receive the write at all.  F_FULLFSYNC
+                        # issues a physical flush (equivalent to a drive FLUSH CACHE command),
+                        # which is the only guarantee that the platter/head actually activates.
+                        # Fall back to os.fsync() if fcntl is unavailable for any reason.
+                        # On all other platforms, os.fsync() is sufficient.
                         if IS_MAC:
                             try:
                                 import fcntl
@@ -58,15 +73,6 @@ class DiskPulseThread(threading.Thread):
                                 os.fsync(f.fileno())
                         else:
                             os.fsync(f.fileno())
-
-                    if IS_WINDOWS:
-                        try:
-                            import ctypes
-                            ctypes.windll.kernel32.SetFileAttributesW(
-                                HEARTBEAT_FILE_PATH, FILE_ATTRIBUTE_HIDDEN
-                            )
-                        except Exception:
-                            pass
 
                     self.last_pulse = now_str
                     print(f"[{now_str}] Pulse sent to {PATH_DISPLAY}")
