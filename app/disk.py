@@ -3,17 +3,35 @@ import time
 from datetime import datetime
 import threading
 
-from app.config import (
+from app.constants import (
     APP_NAME,
-    HEARTBEAT_FILE_PATH,
+    BASE_DIR,
+    HEARTBEAT_FILENAME,
     PATH_DISPLAY,
     IS_MAC,
     IS_LINUX,
     IS_WINDOWS,
-    F_FULLFSYNC,
-    ES_CONTINUOUS,
-    ES_SYSTEM_REQUIRED,
 )
+
+HEARTBEAT_FILE_PATH = os.path.join(BASE_DIR, HEARTBEAT_FILENAME)
+
+# Windows-specific constants for sleep prevention
+if IS_WINDOWS:
+    import ctypes
+    _ES_CONTINUOUS = 0x80000000
+    _ES_SYSTEM_REQUIRED = 0x00000001
+else:
+    ctypes = None  # type: ignore[assignment]
+    _ES_CONTINUOUS = None
+    _ES_SYSTEM_REQUIRED = None
+
+# macOS-specific constant for hardware-level disk flush
+if IS_MAC:
+    import fcntl
+    _F_FULLFSYNC = fcntl.F_FULLFSYNC
+else:
+    fcntl = None  # type: ignore[assignment]
+    _F_FULLFSYNC = None
 
 
 def set_sleep_prevention(active=True):
@@ -22,12 +40,11 @@ def set_sleep_prevention(active=True):
     (Windows only)
     """
     # Windows only: tell the OS not to sleep or turn off the display while we're running.
-    # ES_SYSTEM_REQUIRED keeps the system awake; ES_CONTINUOUS makes the state sticky so
-    # it persists until explicitly cleared (called again with just ES_CONTINUOUS).
+    # _ES_SYSTEM_REQUIRED keeps the system awake; _ES_CONTINUOUS makes the state sticky so
+    # it persists until explicitly cleared (called again with just _ES_CONTINUOUS).
     if IS_WINDOWS:
         try:
-            import ctypes
-            state = (ES_CONTINUOUS | ES_SYSTEM_REQUIRED) if active else ES_CONTINUOUS
+            state = (_ES_CONTINUOUS | _ES_SYSTEM_REQUIRED) if active else _ES_CONTINUOUS
             ctypes.windll.kernel32.SetThreadExecutionState(state)
         except Exception as e:
             print(f"Failed to set sleep prevention state: {e}")
@@ -67,8 +84,7 @@ class DiskPulseThread(threading.Thread):
                         # On all other platforms, os.fsync() is sufficient.
                         if IS_MAC:
                             try:
-                                import fcntl
-                                fcntl.fcntl(f.fileno(), F_FULLFSYNC)
+                                fcntl.fcntl(f.fileno(), _F_FULLFSYNC)
                             except Exception:
                                 os.fsync(f.fileno())
                         else:

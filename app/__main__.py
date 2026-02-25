@@ -3,9 +3,9 @@ import argparse
 import time
 import sys
 
-from app.config import DEFAULT_INTERVAL
+from app.constants import DEFAULT_INTERVAL
 from app.disk import DiskPulseThread
-from app.settings import ensure_config
+from app.config import ensure_config
 from app.tray import TrayApp, is_tray_supported
 
 class WakeTheDrive:

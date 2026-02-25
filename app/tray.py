@@ -1,6 +1,13 @@
+import os
 import subprocess
 
-from app.config import APP_NAME, IS_WINDOWS, IS_MAC, DRIVE_DISPLAY, PATH_DISPLAY, CONFIG_FILE_PATH, BASE_DIR
+from app.constants import APP_NAME, IS_WINDOWS, IS_MAC, PATH_DISPLAY, CONFIG_FILE_PATH, BASE_DIR
+
+# Determine user-friendly drive label for the tray menu
+if IS_WINDOWS:
+    DRIVE_DISPLAY, _ = os.path.splitdrive(BASE_DIR)
+else:
+    DRIVE_DISPLAY = "/"
 
 # Optional: System Tray support
 try:
@@ -40,8 +47,7 @@ def open_config_file(path: str) -> None:
     """
     try:
         if IS_WINDOWS:
-            import os as _os
-            _os.startfile(path)  # type: ignore[attr-defined]
+            os.startfile(path)  # type: ignore[attr-defined]
         elif IS_MAC:
             subprocess.Popen(["open", path])
         else:
@@ -60,8 +66,7 @@ def open_file_explorer(path: str) -> None:
     """
     try:
         if IS_WINDOWS:
-            import os as _os
-            _os.startfile(path)  # type: ignore[attr-defined]
+            os.startfile(path)  # type: ignore[attr-defined]
         elif IS_MAC:
             subprocess.Popen(["open", path])
         else:
